@@ -97,7 +97,14 @@ function createLineContext(event) {
       id: event.source.userId || event.source.groupId || event.source.roomId || 'unknown'
     },
     sendText: async (text) => {
-      await sendLineMessage(accessToken, event.replyToken, [{ type: 'text', text }]);
+      console.log('Sending text:', text);
+      try {
+        await sendLineMessage(accessToken, event.replyToken, [{ type: 'text', text }]);
+        console.log('Text sent successfully');
+      } catch (error) {
+        console.error('Error sending text:', error);
+        throw error;
+      }
     },
     sendSticker: async (sticker) => {
       await sendLineMessage(accessToken, event.replyToken, [{ type: 'sticker', ...sticker }]);
@@ -126,13 +133,26 @@ server.post('*', verifyLineSignature, async (req, res) => {
   const router = App();
   
   try {
+    console.log('Received events:', JSON.stringify(events, null, 2));
+    
     for (const event of events) {
+      console.log('Processing event:', event.type, event.message?.type || 'N/A');
+      
       const context = createLineContext(event);
+      console.log('Context created:', {
+        isText: context.event.isText,
+        text: context.event.text,
+        type: event.type
+      });
+      
       await router(context);
+      console.log('Router processed successfully');
     }
+    
     res.status(200).send('OK');
   } catch (error) {
     console.error('Error processing webhook:', error);
+    console.error('Error stack:', error.stack);
     res.status(500).send('Internal Server Error');
   }
 });
