@@ -1,7 +1,8 @@
 const { createServer } = require('@bottender/express');
 const App = require('../src');
 
-// createServer 需要 App 函數，直接導出 Express app
-module.exports = createServer(App, {
-  dev: false,
-});
+// 建立 Express server，Bottender 會自動處理 LINE webhook
+const server = createServer(App);
+
+// Vercel serverless function
+module.exports = server;
