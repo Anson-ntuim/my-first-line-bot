@@ -120,11 +120,8 @@ async function ShowAbout(context) {
 
 // ===== 處理貼圖 =====
 async function HandleSticker(context) {
-  const packageId = context.event.sticker.packageId;
-  const stickerId = context.event.sticker.stickerId;
-  
-  // 回傳同一個貼圖
-  await context.sendSticker({ packageId: packageId, stickerId: stickerId });
+  // 不直接回傳貼圖，因為 Bot 可能沒有權限使用該貼圖包
+  // 改為發送文字訊息
   await context.sendText('可愛的貼圖！😊');
 }
 

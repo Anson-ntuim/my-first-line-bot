@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "bottender dev",
+    "build": "echo 'No build needed'",
     "lint": "eslint . ",
     "start": "bottender start",
     "test": "jest"

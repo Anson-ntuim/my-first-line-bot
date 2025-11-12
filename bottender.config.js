@@ -40,7 +40,7 @@ module.exports = {
     },
     line: {
       enabled: true,
-      path: '/',
+      path: '/api/line',
       accessToken:
         process.env.LINE_ACCESS_TOKEN || process.env.LINE_CHANNEL_ACCESS_TOKEN,
       channelSecret: process.env.LINE_CHANNEL_SECRET,
