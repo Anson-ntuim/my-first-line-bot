@@ -156,16 +156,26 @@ server.post('*', verifyLineSignature, async (req, res) => {
       console.log('Context created:', {
         isText: context.event.isText,
         text: context.event.text,
-        type: event.type
+        type: event.type,
+        hasReplyToken: !!event.replyToken
       });
       
-      await router(context);
+      // 檢查 router 是否為函數
+      if (typeof router !== 'function') {
+        console.error('Router is not a function!', typeof router);
+        return res.status(500).send('Router error');
+      }
+      
+      console.log('Calling router...');
+      const result = await router(context);
+      console.log('Router result:', result);
       console.log('Router processed successfully');
     }
     
     res.status(200).send('OK');
   } catch (error) {
     console.error('Error processing webhook:', error);
+    console.error('Error message:', error.message);
     console.error('Error stack:', error.stack);
     res.status(500).send('Internal Server Error');
   }
