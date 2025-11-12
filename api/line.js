@@ -120,8 +120,8 @@ function createLineContext(event) {
   };
 }
 
-// LINE webhook 處理
-server.post('/', verifyLineSignature, async (req, res) => {
+// LINE webhook 處理 - 處理所有 POST 請求
+server.post('*', verifyLineSignature, async (req, res) => {
   const events = req.body.events;
   const router = App();
   
@@ -135,6 +135,11 @@ server.post('/', verifyLineSignature, async (req, res) => {
     console.error('Error processing webhook:', error);
     res.status(500).send('Internal Server Error');
   }
+});
+
+// 處理所有其他請求（用於測試）
+server.all('*', (req, res) => {
+  res.status(200).json({ message: 'LINE Bot is running', method: req.method, path: req.path });
 });
 
 // Vercel serverless function
