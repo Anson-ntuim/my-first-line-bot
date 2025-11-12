@@ -105,7 +105,14 @@ function createLineContext(event) {
       id: event.source.userId || event.source.groupId || event.source.roomId || 'unknown'
     },
     sendText: async (text) => {
-      await sendLineMessage(accessToken, event.replyToken, [{ type: 'text', text }]);
+      console.log('sendText called with:', text);
+      try {
+        await sendLineMessage(accessToken, event.replyToken, [{ type: 'text', text }]);
+        console.log('Text sent successfully');
+      } catch (error) {
+        console.error('Error in sendText:', error);
+        throw error;
+      }
     },
     sendSticker: async (sticker) => {
       await sendLineMessage(accessToken, event.replyToken, [{
@@ -136,6 +143,9 @@ function createLineContext(event) {
 server.post('*', verifyLineSignature, async (req, res) => {
   const events = req.body.events || [];
   
+  console.log('=== Webhook Received ===');
+  console.log('Events count:', events.length);
+  
   if (events.length === 0) {
     return res.status(200).send('OK');
   }
@@ -144,17 +154,28 @@ server.post('*', verifyLineSignature, async (req, res) => {
   
   try {
     for (const event of events) {
+      console.log('Processing event:', event.type, event.message?.type || 'N/A');
+      
       const context = createLineContext(event);
+      console.log('Context created - isText:', context.event.isText, 'text:', context.event.text);
+      
       const handler = await router(context);
+      console.log('Router returned handler type:', typeof handler);
       
       if (typeof handler === 'function') {
+        console.log('Executing handler...');
         await handler(context);
+        console.log('Handler executed successfully');
+      } else {
+        console.log('Handler is not a function, value:', handler);
       }
     }
     
     res.status(200).send('OK');
   } catch (error) {
     console.error('Error processing webhook:', error);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
     res.status(500).send('Internal Server Error');
   }
 });
