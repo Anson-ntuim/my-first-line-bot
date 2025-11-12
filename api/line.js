@@ -36,10 +36,23 @@ function verifyLineSignature(req, res, next) {
 // 發送 LINE 訊息的輔助函數
 function sendLineMessage(accessToken, replyToken, messages) {
   return new Promise((resolve, reject) => {
+    if (!accessToken) {
+      return reject(new Error('AccessToken is missing!'));
+    }
+    
+    if (!replyToken) {
+      return reject(new Error('ReplyToken is missing!'));
+    }
+    
     const data = JSON.stringify({
       replyToken,
       messages
     });
+
+    console.log('=== SENDING LINE MESSAGE ===');
+    console.log('ReplyToken:', replyToken);
+    console.log('Messages:', JSON.stringify(messages, null, 2));
+    console.log('AccessToken length:', accessToken.length);
 
     const options = {
       hostname: 'api.line.me',
@@ -56,15 +69,24 @@ function sendLineMessage(accessToken, replyToken, messages) {
       let body = '';
       res.on('data', (chunk) => { body += chunk; });
       res.on('end', () => {
+        console.log('LINE API response status:', res.statusCode);
+        console.log('LINE API response body:', body);
         if (res.statusCode >= 200 && res.statusCode < 300) {
+          console.log('Message sent successfully!');
           resolve(body);
         } else {
-          reject(new Error(`LINE API error: ${res.statusCode} - ${body}`));
+          const error = new Error(`LINE API error: ${res.statusCode} - ${body}`);
+          console.error('LINE API error:', error.message);
+          reject(error);
         }
       });
     });
 
-    req.on('error', reject);
+    req.on('error', (error) => {
+      console.error('Request error:', error);
+      reject(error);
+    });
+    
     req.write(data);
     req.end();
   });
@@ -175,10 +197,20 @@ server.post('*', verifyLineSignature, async (req, res) => {
       
       console.log('=== CALLING ROUTER ===');
       try {
-        const result = await router(context);
-        console.log('Router returned:', result);
+        const handler = await router(context);
+        console.log('Router returned handler:', typeof handler);
+        
+        // Bottender router 返回的是一個處理函數，需要執行它
+        if (typeof handler === 'function') {
+          console.log('Executing handler...');
+          await handler(context);
+          console.log('Handler executed successfully');
+        } else {
+          console.log('Handler is not a function, result:', handler);
+        }
       } catch (routerError) {
         console.error('Router error:', routerError);
+        console.error('Router error message:', routerError.message);
         console.error('Router error stack:', routerError.stack);
       }
       console.log('=== ROUTER COMPLETED ===');
