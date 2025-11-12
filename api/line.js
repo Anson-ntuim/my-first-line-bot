@@ -44,10 +44,27 @@ function sendLineMessage(accessToken, replyToken, messages) {
       return reject(new Error('ReplyToken is missing!'));
     }
     
-    const data = JSON.stringify({
-      replyToken,
-      messages
+    // 確保 messages 格式正確
+    const validMessages = messages.map(msg => {
+      if (msg.type === 'text') {
+        // LINE API 要求 text 必須是字串，且長度不超過 5000 字元
+        const text = String(msg.text || '');
+        if (text.length > 5000) {
+          throw new Error('Text message too long (max 5000 characters)');
+        }
+        return { type: 'text', text: text };
+      }
+      return msg;
     });
+    
+    const requestBody = {
+      replyToken,
+      messages: validMessages
+    };
+    
+    const data = JSON.stringify(requestBody);
+    
+    console.log('Sending to LINE API:', JSON.stringify(requestBody, null, 2));
 
     const options = {
       hostname: 'api.line.me',
@@ -56,7 +73,7 @@ function sendLineMessage(accessToken, replyToken, messages) {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${accessToken}`,
-        'Content-Length': data.length
+        'Content-Length': Buffer.byteLength(data, 'utf8')
       }
     };
 
@@ -64,6 +81,7 @@ function sendLineMessage(accessToken, replyToken, messages) {
       let body = '';
       res.on('data', (chunk) => { body += chunk; });
       res.on('end', () => {
+        console.log('LINE API response:', res.statusCode, body);
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(body);
         } else {
@@ -72,8 +90,12 @@ function sendLineMessage(accessToken, replyToken, messages) {
       });
     });
 
-    req.on('error', reject);
-    req.write(data);
+    req.on('error', (error) => {
+      console.error('Request error:', error);
+      reject(error);
+    });
+    
+    req.write(data, 'utf8');
     req.end();
   });
 }
