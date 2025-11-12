@@ -153,12 +153,12 @@ server.post('*', verifyLineSignature, async (req, res) => {
       console.log('Event details:', JSON.stringify(event, null, 2));
       
       const context = createLineContext(event);
-      console.log('Context created:', {
-        isText: context.event.isText,
-        text: context.event.text,
-        type: event.type,
-        hasReplyToken: !!event.replyToken
-      });
+      console.log('=== CONTEXT DEBUG ===');
+      console.log('isText:', context.event.isText);
+      console.log('text:', context.event.text);
+      console.log('type:', event.type);
+      console.log('hasReplyToken:', !!event.replyToken);
+      console.log('event keys:', Object.keys(context.event));
       
       // 檢查 router 是否為函數
       if (typeof router !== 'function') {
@@ -166,20 +166,22 @@ server.post('*', verifyLineSignature, async (req, res) => {
         return res.status(500).send('Router error');
       }
       
-      console.log('Calling router...');
-      console.log('Router type:', typeof router);
-      
       // 檢查 accessToken 是否存在
       const accessToken = process.env.LINE_ACCESS_TOKEN || process.env.LINE_CHANNEL_ACCESS_TOKEN;
       console.log('AccessToken exists:', !!accessToken);
-      console.log('AccessToken length:', accessToken ? accessToken.length : 0);
+      if (!accessToken) {
+        console.error('ERROR: AccessToken is missing!');
+      }
       
-      const result = await router(context);
-      console.log('Router result:', result);
-      console.log('Router processed successfully');
-      
-      // 檢查是否有發送訊息的嘗試
-      console.log('Checking if message was sent...');
+      console.log('=== CALLING ROUTER ===');
+      try {
+        const result = await router(context);
+        console.log('Router returned:', result);
+      } catch (routerError) {
+        console.error('Router error:', routerError);
+        console.error('Router error stack:', routerError.stack);
+      }
+      console.log('=== ROUTER COMPLETED ===');
     }
     
     res.status(200).send('OK');

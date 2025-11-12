@@ -175,6 +175,7 @@ module.exports = function App() {
     
     // 預設回應（處理所有文字）
     route(function(context) {
+      console.log('Checking DefaultResponse route, isText:', context.event.isText);
       return context.event.isText;
     }, DefaultResponse),
   ]);
