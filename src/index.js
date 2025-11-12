@@ -1,17 +1,17 @@
-const { router, text, route, matchKeywords, sticker } = require('bottender');
+const { router, text, route } = require('bottender/router');
 
 async function handleText(context){
   const userText = context.event.text;
-  return context.sendText(`你剛剛說${userText}`)
+  await context.sendText(`你剛剛說${userText}`);
 }
 
 async function handleSticker(context){
-  return context.sendText("好可愛的貼圖")
+  await context.sendText("好可愛的貼圖");
 }
 
-module.exports = async function App(){
+module.exports = function App(){
   return router([
     text("*", handleText),
-    sticker("*", handleSticker),
-  ])
+    route((context) => context.event.isSticker, handleSticker),
+  ]);
 }
