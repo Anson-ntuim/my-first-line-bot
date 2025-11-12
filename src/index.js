@@ -62,6 +62,7 @@ async function Welcome(context) {
 
 // ===== 主選單 =====
 async function ShowMainMenu(context) {
+  console.log('ShowMainMenu called!');
   await context.reply([
     {
       type: 'text',
@@ -150,7 +151,10 @@ async function HandlePostback(context) {
 
 // ===== 預設回應 =====
 async function DefaultResponse(context) {
+  console.log('DefaultResponse called!');
+  console.log('Context event:', context.event);
   await context.sendText('試試看輸入：課程、作業、主選單');
+  console.log('DefaultResponse completed');
 }
 
 // ===== 主路由 =====

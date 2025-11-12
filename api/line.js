@@ -167,9 +167,19 @@ server.post('*', verifyLineSignature, async (req, res) => {
       }
       
       console.log('Calling router...');
+      console.log('Router type:', typeof router);
+      
+      // 檢查 accessToken 是否存在
+      const accessToken = process.env.LINE_ACCESS_TOKEN || process.env.LINE_CHANNEL_ACCESS_TOKEN;
+      console.log('AccessToken exists:', !!accessToken);
+      console.log('AccessToken length:', accessToken ? accessToken.length : 0);
+      
       const result = await router(context);
       console.log('Router result:', result);
       console.log('Router processed successfully');
+      
+      // 檢查是否有發送訊息的嘗試
+      console.log('Checking if message was sent...');
     }
     
     res.status(200).send('OK');
