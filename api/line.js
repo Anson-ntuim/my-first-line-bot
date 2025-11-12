@@ -129,14 +129,28 @@ function createLineContext(event) {
 
 // LINE webhook 處理 - 處理所有 POST 請求
 server.post('*', verifyLineSignature, async (req, res) => {
-  const events = req.body.events;
+  console.log('=== Webhook Request Received ===');
+  console.log('Method:', req.method);
+  console.log('Path:', req.path);
+  console.log('Headers:', JSON.stringify(req.headers, null, 2));
+  console.log('Body:', JSON.stringify(req.body, null, 2));
+  
+  const events = req.body.events || [];
+  console.log('Events array length:', events.length);
+  console.log('Events:', JSON.stringify(events, null, 2));
+  
+  if (events.length === 0) {
+    console.log('WARNING: No events received!');
+    console.log('Full request body:', JSON.stringify(req.body, null, 2));
+    return res.status(200).send('OK');
+  }
+  
   const router = App();
   
   try {
-    console.log('Received events:', JSON.stringify(events, null, 2));
-    
     for (const event of events) {
       console.log('Processing event:', event.type, event.message?.type || 'N/A');
+      console.log('Event details:', JSON.stringify(event, null, 2));
       
       const context = createLineContext(event);
       console.log('Context created:', {
