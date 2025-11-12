@@ -1,7 +1,14 @@
-const {bottender} = require("bottender");
+const { bottender } = require('bottender');
 
-const handeler = bottender({
+const handler = bottender({
   dev: false,
 });
 
-module.exports = handeler;
+module.exports = async (req, res) => {
+  try {
+    await handler(req, res);
+  } catch (error) {
+    console.error('Error handling request:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
